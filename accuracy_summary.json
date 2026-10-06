@@ -1,0 +1,148 @@
+{
+  "metrics": {
+    "total_forms": 11,
+    "total_fields": 319,
+    "total_matches": 305,
+    "overall_accuracy_pct": 95.61,
+    "qr_accuracy_pct": 100.0,
+    "profile_api_accuracy_pct": 100.0,
+    "checkbox_accuracy_pct": 100.0,
+    "scale_exact_accuracy_pct": 94.47,
+    "scale_tolerant_accuracy_pct": 94.47,
+    "text_accuracy_pct": 100.0
+  },
+  "form_summaries": {
+    "aartik_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 26,
+      "scale_exact": 20,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "AashaK_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 27,
+      "scale_exact": 21,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "anitag_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 28,
+      "scale_exact": 22,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "bars_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 28,
+      "scale_exact": 22,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 0.9886363636363636
+    },
+    "kadujic_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 29,
+      "scale_exact": 23,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "kanchnb_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 27,
+      "scale_exact": 21,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "krishj_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 28,
+      "scale_exact": 22,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "PrithiM_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 27,
+      "scale_exact": 21,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 0.9942196531791907
+    },
+    "subhashp_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 28,
+      "scale_exact": 22,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "tanishqp_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 29,
+      "scale_exact": 23,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    },
+    "tejalg_qr.pdf": {
+      "total_fields": 29,
+      "exact_matches": 28,
+      "scale_exact": 22,
+      "scale_off_by_one": 0,
+      "scale_total": 23,
+      "cb_matches": 2,
+      "cb_total": 2,
+      "qr_matches": 1,
+      "qr_total": 1,
+      "text_sim": 1.0
+    }
+  }
+}

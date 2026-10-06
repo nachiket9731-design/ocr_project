@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormScanner — OCR Review</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Base ────────────────────────────────────────────── */
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #1f2937;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        h1,h2,h3,h4,h5,h6 { font-family: 'Poppins', sans-serif; }
+
+        /* ── Navbar ──────────────────────────────────────────── */
+        .topbar {
+            background: linear-gradient(90deg, #1a202c 0%, #2d3748 100%);
+            color: white;
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand-icon { -webkit-text-fill-color: #818cf8; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .status-badge.show { opacity: 1; }
+        .status-badge.success { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .status-badge.error   { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* ── Main two-panel layout ───────────────────────────── */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── LEFT PANEL ──────────────────────────────────────── */
+        .left-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: #111827;
+            border-right: 2px solid #374151;
+            flex-shrink: 0;
+        }
+
+        /* Panel sub-header (page tabs) */
+        .panel-bar {
+            background: #1f2937;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            border-bottom: 1px solid #374151;
+        }
+        .panel-bar-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .page-tabs {
+            display: flex;
+            gap: 4px;
+        }
+        .page-tab {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #6b7280;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+        .page-tab:hover { border-color: #818cf8; color: #818cf8; }
+        .page-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Zoom toolbar */
+        .zoom-bar {
+            background: #1f2937;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #374151;
+            flex-shrink: 0;
+        }
+        .zoom-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            border: 1px solid #374151;
+            background: #2d3748;
+            color: #d1d5db;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s;
+            flex-shrink: 0;
+        }
+        .zoom-btn:hover { background: #667eea; border-color: #667eea; color: white; }
+        .zoom-text-btn {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 7px;
+            border: 1px solid #374151;
+            background: #2d3748;
+            color: #d1d5db;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.18s;
+        }
+        .zoom-text-btn:hover { background: #4b5563; color: white; }
+        .zoom-pct {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #818cf8;
+            min-width: 44px;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+        }
+        .zoom-sep { color: #374151; font-size: 0.7rem; user-select: none; }
+        .zoom-hint {
+            font-size: 0.7rem;
+            color: #4b5563;
+            margin-left: auto;
+        }
+
+        /* Upload drop zone */
+        .drop-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #4b5563;
+            cursor: pointer;
+            border: 2px dashed #374151;
+            margin: 16px;
+            border-radius: 14px;
+            transition: all 0.25s;
+            text-align: center;
+            padding: 30px;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #818cf8;
+            color: #818cf8;
+            background: rgba(129,140,248,0.05);
+        }
+        .drop-zone .dz-icon { font-size: 3.5rem; margin-bottom: 14px; opacity: 0.6; }
+        .drop-zone .dz-main { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+        .drop-zone .dz-sub  { font-size: 0.8rem; opacity: 0.6; }
+
+        /* Image viewport */
+        .img-viewport {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+            display: none;
+            position: relative;
+            background: #0f172a;
+        }
+        .img-viewport.show { display: block; }
+
+        /* Loading overlay inside viewport */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(17,24,39,0.88);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            color: #d1d5db;
+        }
+        .loading-overlay.show { display: flex; }
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #374151;
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            margin-bottom: 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 0.85rem; color: #9ca3af; font-family: 'Poppins', sans-serif; }
+
+        /* PDF page image */
+        .page-wrap { display: none; padding: 16px; }
+        .page-wrap.active { display: block; }
+        .page-wrap img {
+            display: block;
+            width: 100%;        /* zoom is applied by changing this % */
+            border-radius: 4px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+        }
+
+        /* ── RIGHT PANEL ─────────────────────────────────────── */
+        .right-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+        .right-bar {
+            background: white;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .right-bar-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-csv {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.2);
+        }
+        .btn-csv:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+        }
+        .btn-csv:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        /* Scrollable fields area */
+        .fields-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 20px 30px;
+        }
+        /* Custom scrollbar */
+        .fields-scroll::-webkit-scrollbar { width: 5px; }
+        .fields-scroll::-webkit-scrollbar-track { background: transparent; }
+        .fields-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px;
+        }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 16px; opacity: 0.35; }
+        .empty-state .es-title { font-weight: 600; font-size: 0.95rem; color: #64748b; margin-bottom: 6px; }
+        .empty-state .es-sub   { font-size: 0.82rem; }
+
+        /* ── Section headers ─────────────────────────────────── */
+        .section-hdr {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            margin: 18px 0 12px;
+            color: white;
+        }
+        .section-hdr:first-child { margin-top: 0; }
+        .section-hdr.general { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); }
+        .section-hdr.page1   { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .section-hdr.page2   { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+        .section-hdr.flags   { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+
+        /* ── Field grid ──────────────────────────────────────── */
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 16px;
+        }
+        .field-row { margin-bottom: 11px; }
+        .field-row.full { grid-column: 1 / -1; }
+
+        .f-label {
+            margin-bottom: 4px;
+            line-height: 1.35;
+        }
+        .f-hindi {
+            display: block;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .f-english {
+            display: block;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .f-input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 7px;
+            font-size: 0.84rem;
+            background: white;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .f-input:focus {
+            outline: none;
+            border-color: #818cf8;
+            background: #f5f3ff;
+        }
+        .f-input.readonly {
+            background: #f8fafc;
+            color: #64748b;
+            cursor: default;
+            border-style: dashed;
+        }
+        textarea.f-input {
+            resize: vertical;
+            min-height: 75px;
+            line-height: 1.5;
+        }
+        .f-input.flag-input {
+            background: #fff7ed;
+            border-color: #fb923c;
+            color: #9a3412;
+            font-size: 0.78rem;
+        }
+
+        /* Readonly tag */
+        .readonly-tag {
+            display: inline-block;
+            font-size: 0.62rem;
+            background: #e2e8f0;
+            color: #64748b;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+            vertical-align: middle;
+            font-weight: 600;
+        }
+
+        /* Hidden file input */
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- ── Top Bar ──────────────────────────────────────────────────── -->
+<div class="topbar">
+    <div class="brand">
+        <i class="fas fa-file-alt brand-icon"></i>
+        FormScanner — OCR Review
+    </div>
+    <div id="statusBadge" class="status-badge"></div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" accept=".pdf">
+
+<!-- ── Workspace ────────────────────────────────────────────────── -->
+<div class="workspace">
+
+    <!-- ══════════════ LEFT PANEL ══════════════ -->
+    <div class="left-panel">
+
+        <!-- Panel bar: title + page tabs -->
+        <div class="panel-bar">
+            <div class="panel-bar-title">
+                <i class="fas fa-file-pdf" style="color:#818cf8;"></i>
+                Document Preview
+            </div>
+            <div class="page-tabs" id="pageTabs" style="display:none;">
+                <button class="page-tab active" onclick="showPage(1)">
+                    <i class="fas fa-file me-1"></i>Page 1
+                </button>
+                <button class="page-tab" onclick="showPage(2)">
+                    <i class="fas fa-file me-1"></i>Page 2
+                </button>
+            </div>
+        </div>
+
+        <!-- Zoom toolbar -->
+        <div class="zoom-bar" id="zoomBar" style="display:none;">
+            <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out (Ctrl -)">
+                <i class="fas fa-minus"></i>
+            </button>
+            <span class="zoom-pct" id="zoomPct">100%</span>
+            <button class="zoom-btn" onclick="zoomIn()" title="Zoom In (Ctrl +)">
+                <i class="fas fa-plus"></i>
+            </button>
+            <span class="zoom-sep">│</span>
+            <button class="zoom-text-btn" onclick="zoomReset()" title="Reset to 100% (Ctrl 0)">
+                Reset
+            </button>
+            <button class="zoom-text-btn" onclick="zoomFit()" title="Fit to panel width">
+                Fit
+            </button>
+            <span class="zoom-hint">Ctrl + / Ctrl −</span>
+        </div>
+
+        <!-- Drop zone (shown before upload) -->
+        <div class="drop-zone" id="dropZone">
+            <i class="fas fa-cloud-upload-alt dz-icon"></i>
+            <p class="dz-main">Drop your PDF here</p>
+            <p class="dz-sub">or click to browse your computer</p>
+        </div>
+
+        <!-- Image viewport (shown after upload) -->
+        <div class="img-viewport" id="imgViewport">
+
+            <!-- Spinner overlay while processing -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Running OCR pipeline...</div>
+                <div style="font-size:0.72rem; color:#6b7280; margin-top:6px;">
+                    This may take 10–30 seconds
+                </div>
+            </div>
+
+            <!-- Page 1 image -->
+            <div class="page-wrap active" id="pageWrap1">
+                <img id="pageImg1" src="" alt="Page 1">
+            </div>
+
+            <!-- Page 2 image -->
+            <div class="page-wrap" id="pageWrap2">
+                <img id="pageImg2" src="" alt="Page 2">
+            </div>
+
+        </div>
+    </div><!-- /left-panel -->
+
+
+    <!-- ══════════════ RIGHT PANEL ══════════════ -->
+    <div class="right-panel">
+
+        <!-- Right bar: title + download button -->
+        <div class="right-bar">
+            <div class="right-bar-title">
+                <i class="fas fa-pen-to-square" style="color:#818cf8;"></i>
+                Edit &amp; Validate Data
+            </div>
+            <button class="btn-csv" id="downloadBtn" onclick="downloadCSV()" disabled>
+                <i class="fas fa-download"></i> Download CSV
+            </button>
+        </div>
+
+        <!-- Scrollable fields area -->
+        <div class="fields-scroll">
+
+            <!-- Empty state placeholder -->
+            <div class="empty-state" id="emptyState">
+                <i class="fas fa-file-arrow-up"></i>
+                <div class="es-title">No form loaded yet</div>
+                <div class="es-sub">Upload a PDF on the left panel to start extraction</div>
+            </div>
+
+            <!-- All extracted fields (hidden until data loads) -->
+            <div id="fieldsContainer" style="display:none;">
+
+                <!-- ── General Information ── -->
+                <div class="section-hdr general">
+                    <i class="fas fa-circle-info"></i> General Information
+                </div>
+                <div class="field-grid">
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">दिनांक</span>
+                            <span class="f-english">Date</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_Date">
+                    </div>
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">खोजी नंबर</span>
+                            <span class="f-english">Seeker / Participant Number</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_Khoji_No">
+                    </div>
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">शहर</span>
+                            <span class="f-english">City</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_City">
+                    </div>
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">नाम</span>
+                            <span class="f-english">Name</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_Name">
+                    </div>
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">User ID <span class="readonly-tag">auto</span></span>
+                            <span class="f-english">From QR Code scan</span>
+                        </div>
+                        <input type="text" class="f-input readonly" id="f_User_ID" readonly>
+                    </div>
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Source File <span class="readonly-tag">auto</span></span>
+                            <span class="f-english">Uploaded PDF filename</span>
+                        </div>
+                        <input type="text" class="f-input readonly" id="f_Source_File" readonly>
+                    </div>
+                </div>
+
+                <!-- ── Page 1 ── -->
+                <div class="section-hdr page1">
+                    <i class="fas fa-circle-1"></i> Page 1 — Pre-Retreat Assessment (पूर्व-शिविर मूल्यांकन)
+                </div>
+                <div class="field-grid">
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q1: मेडिकल इमरजेंसी MSY को आ सकती है?</span>
+                            <span class="f-english">Medical emergency possible? — हाँ / ना</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q1" placeholder="Yes / No">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q2: मौन के पालन में दिक्कत?</span>
+                            <span class="f-english">Difficulty maintaining silence? — हाँ / ना</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q2" placeholder="Yes / No">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q3: शांति की अवस्था</span>
+                            <span class="f-english">Peace level — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q3" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q4: गैरज़रूरी विचारों की संख्या</span>
+                            <span class="f-english">Unnecessary thoughts — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q4" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q5: तनाव की अवस्था</span>
+                            <span class="f-english">Stress level — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q5" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q6: नींद से संबंधित दिक्कत</span>
+                            <span class="f-english">Sleep issues — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q6" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q7: शारीरिक बीमारी</span>
+                            <span class="f-english">Physical illness — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q7" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q8: मानसिक आरोग्य</span>
+                            <span class="f-english">Mental health — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q8" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q9: निर्विचार / विचारशून्य अवस्था</span>
+                            <span class="f-english">Thoughtless state — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q9" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q10: अनचाही आदतें या पैटर्न्स</span>
+                            <span class="f-english">Unwanted habits / patterns — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q10" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q11: भावनात्मक स्थिरता</span>
+                            <span class="f-english">Emotional stability — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q11" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q12: जागृति और साक्षीभाव</span>
+                            <span class="f-english">Awareness &amp; Witness state — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P1_Q12" placeholder="1–10">
+                    </div>
+
+                </div><!-- /field-grid page1 -->
+
+                <!-- ── Page 2 ── -->
+                <div class="section-hdr page2">
+                    <i class="fas fa-circle-2"></i> Page 2 — Post-Retreat Feedback (पश्चात-शिविर प्रतिक्रिया)
+                </div>
+                <div class="field-grid">
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q1: शांति की अवस्था महसूस हो रही है</span>
+                            <span class="f-english">Peace felt after retreat — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q1" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q2: गैरज़रूरी विचार कम हुए</span>
+                            <span class="f-english">Unnecessary thoughts reduced — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q2" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q3: सकारात्मक परिवर्तन</span>
+                            <span class="f-english">Positive change in daily life — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q3" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q4: तनाव कम हुआ</span>
+                            <span class="f-english">Stress reduced — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q4" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q5: Sleeping Pattern में सुधार</span>
+                            <span class="f-english">Sleep improvement — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q5" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q6: शारीरिक आरोग्य में सुधार</span>
+                            <span class="f-english">Physical health improvement — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q6" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q7: मानसिक आरोग्य में सुधार</span>
+                            <span class="f-english">Mental health improvement — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q7" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q8: निर्विचार अवस्था का स्तर</span>
+                            <span class="f-english">Thoughtless state level — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q8" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q9: मूल अवस्था में रहने का कनविक्शन</span>
+                            <span class="f-english">Conviction to stay in base state — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q9" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q10: अनचाही आदतों से छुटकारा</span>
+                            <span class="f-english">Freedom from unwanted habits — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q10" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q11: भावनात्मक स्थिरता में सुधार</span>
+                            <span class="f-english">Emotional stability improvement — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q11" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q12: आत्मिक संतुष्टि और खुशी</span>
+                            <span class="f-english">Spiritual satisfaction &amp; joy — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q12" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="f-label">
+                            <span class="f-hindi">Q13: जागृति और साक्षी भाव में बढ़ोत्तरी</span>
+                            <span class="f-english">Awareness &amp; Witness state increase — Rating 1–10</span>
+                        </div>
+                        <input type="text" class="f-input" id="f_P2_Q13" placeholder="1–10">
+                    </div>
+
+                    <div class="field-row full">
+                        <div class="f-label">
+                            <span class="f-hindi">Q14: सुझाव या फीडबैक</span>
+                            <span class="f-english">Feedback / Suggestions — Open text</span>
+                        </div>
+                        <textarea class="f-input" id="f_P2_Q14" placeholder="Extracted feedback text will appear here..."></textarea>
+                    </div>
+
+                </div><!-- /field-grid page2 -->
+
+                <!-- ── Flagged Fields ── -->
+                <div class="section-hdr flags">
+                    <i class="fas fa-triangle-exclamation"></i> ⚠ Flagged Fields (Review Needed)
+                </div>
+                <div class="field-row">
+                    <div class="f-label">
+                        <span class="f-hindi">Flagged Fields <span class="readonly-tag">auto</span></span>
+                        <span class="f-english">Fields that may be missing, double-marked, or uncertain</span>
+                    </div>
+                    <textarea class="f-input flag-input" id="f_Flagged_Fields" readonly rows="3"></textarea>
+                </div>
+
+            </div><!-- /fieldsContainer -->
+        </div><!-- /fields-scroll -->
+    </div><!-- /right-panel -->
+
+</div><!-- /workspace -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════
+let zoomLevel     = 1.0;
+let currentPage   = 1;
+let currentFile   = '';
+
+const ZOOM_MIN    = 0.4;
+const ZOOM_MAX    = 3.5;
+const ZOOM_STEP   = 0.15;
+
+// Must match main.py CSV_COLUMNS exactly
+const CSV_COLUMNS = [
+    'Source_File', 'User_ID',
+    'Date', 'Khoji_No', 'City', 'Name',
+    'P1_Q1', 'P1_Q2',
+    'P1_Q3',  'P1_Q4',  'P1_Q5',  'P1_Q6',
+    'P1_Q7',  'P1_Q8',  'P1_Q9',  'P1_Q10',
+    'P1_Q11', 'P1_Q12',
+    'P2_Q1',  'P2_Q2',  'P2_Q3',  'P2_Q4',
+    'P2_Q5',  'P2_Q6',  'P2_Q7',  'P2_Q8',
+    'P2_Q9',  'P2_Q10', 'P2_Q11', 'P2_Q12',
+    'P2_Q13', 'P2_Q14',
+    'Flagged_Fields'
+];
+
+// ═══════════════════════════════════════════════════
+//  Upload / Drag-drop wiring
+// ═══════════════════════════════════════════════════
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+});
+
+dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.toLowerCase().endsWith('.pdf')) handleFile(f);
+    else alert('Please drop a PDF file.');
+});
+
+// ═══════════════════════════════════════════════════
+//  Handle file → POST to Flask → populate UI
+// ═══════════════════════════════════════════════════
+function handleFile(file) {
+    currentFile = file.name;
+
+    // Switch drop zone → viewport
+    dropZone.style.display = 'none';
+    const viewport = document.getElementById('imgViewport');
+    viewport.classList.add('show');
+    document.getElementById('loadingOverlay').classList.add('show');
+
+    // Reset right panel
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('fieldsContainer').style.display = 'none';
+    document.getElementById('downloadBtn').disabled = true;
+    setStatus('', '');
+
+    const fd = new FormData();
+    fd.append('pdf', file);
+
+    fetch('/process', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('loadingOverlay').classList.remove('show');
+
+            if (data.error) {
+                setStatus('error', 'Error — check terminal for details');
+                console.error(data.error, data.traceback);
+                // Revert to drop zone
+                viewport.classList.remove('show');
+                dropZone.style.display = 'flex';
+                return;
+            }
+
+            // Load page images
+            if (data.pages && data.pages[0]) {
+                document.getElementById('pageImg1').src =
+                    'data:image/png;base64,' + data.pages[0];
+            }
+            if (data.pages && data.pages[1]) {
+                document.getElementById('pageImg2').src =
+                    'data:image/png;base64,' + data.pages[1];
+            }
+
+            // Show page tabs + zoom bar
+            document.getElementById('pageTabs').style.display = 'flex';
+            document.getElementById('zoomBar').style.display  = 'flex';
+
+            // Default: show page 1 at 100%
+            showPage(1);
+            zoomLevel = 1.0;
+            applyZoom();
+
+            // Populate editable fields
+            fillFields(data.fields);
+            document.getElementById('fieldsContainer').style.display = 'block';
+            document.getElementById('downloadBtn').disabled = false;
+            setStatus('success', 'Extraction complete');
+        })
+        .catch(err => {
+            document.getElementById('loadingOverlay').classList.remove('show');
+            setStatus('error', 'Network error');
+            console.error(err);
+        });
+}
+
+// ═══════════════════════════════════════════════════
+//  Fill right-panel fields with extracted data
+// ═══════════════════════════════════════════════════
+function fillFields(fields) {
+    CSV_COLUMNS.forEach(key => {
+        const el = document.getElementById('f_' + key);
+        if (el) el.value = (fields[key] !== undefined && fields[key] !== null)
+                           ? fields[key] : '';
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  Page toggle
+// ═══════════════════════════════════════════════════
+function showPage(n) {
+    currentPage = n;
+    document.getElementById('pageWrap1').classList.toggle('active', n === 1);
+    document.getElementById('pageWrap2').classList.toggle('active', n === 2);
+    document.querySelectorAll('.page-tab').forEach((btn, i) => {
+        btn.classList.toggle('active', i + 1 === n);
+    });
+    // Scroll back to top of viewport on page switch
+    document.getElementById('imgViewport').scrollTop = 0;
+}
+
+// ═══════════════════════════════════════════════════
+//  Zoom controls
+// ═══════════════════════════════════════════════════
+function applyZoom() {
+    const pct = Math.round(zoomLevel * 100);
+    document.getElementById('zoomPct').textContent = pct + '%';
+    // Apply by setting image width as percentage of viewport
+    ['pageImg1', 'pageImg2'].forEach(id => {
+        const img = document.getElementById(id);
+        if (img) img.style.width = (zoomLevel * 100) + '%';
+    });
+}
+
+function zoomIn() {
+    if (zoomLevel < ZOOM_MAX) {
+        zoomLevel = Math.min(ZOOM_MAX, parseFloat((zoomLevel + ZOOM_STEP).toFixed(2)));
+        applyZoom();
+    }
+}
+
+function zoomOut() {
+    if (zoomLevel > ZOOM_MIN) {
+        zoomLevel = Math.max(ZOOM_MIN, parseFloat((zoomLevel - ZOOM_STEP).toFixed(2)));
+        applyZoom();
+    }
+}
+
+function zoomReset() {
+    zoomLevel = 1.0;
+    applyZoom();
+}
+
+function zoomFit() {
+    // Fit image width to the visible viewport width
+    const viewport = document.getElementById('imgViewport');
+    const img = document.getElementById('pageImg' + currentPage);
+    if (!img || !img.naturalWidth) { zoomReset(); return; }
+    const viewW = viewport.clientWidth - 32; // subtract padding
+    const scale = viewW / img.naturalWidth;
+    zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, parseFloat(scale.toFixed(2))));
+    applyZoom();
+}
+
+// Keyboard shortcuts: Ctrl+, Ctrl-, Ctrl+0
+document.addEventListener('keydown', e => {
+    if (!e.ctrlKey) return;
+    if (e.key === '=' || e.key === '+') { e.preventDefault(); zoomIn(); }
+    if (e.key === '-')                  { e.preventDefault(); zoomOut(); }
+    if (e.key === '0')                  { e.preventDefault(); zoomReset(); }
+});
+
+// Mouse-wheel zoom on the image viewport
+document.getElementById('imgViewport').addEventListener('wheel', e => {
+    if (e.ctrlKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) zoomIn();
+        else              zoomOut();
+    }
+}, { passive: false });
+
+// ═══════════════════════════════════════════════════
+//  CSV Download — reads current field values
+// ═══════════════════════════════════════════════════
+function downloadCSV() {
+    // Collect current values from all inputs (including manual edits)
+    const row = {};
+    CSV_COLUMNS.forEach(key => {
+        const el = document.getElementById('f_' + key);
+        row[key] = el ? el.value : '';
+    });
+
+    // Build CSV with proper quoting
+    const header  = CSV_COLUMNS.join(',');
+    const values  = CSV_COLUMNS.map(k => {
+        const v = String(row[k] || '');
+        if (v.includes(',') || v.includes('\n') || v.includes('"'))
+            return '"' + v.replace(/"/g, '""') + '"';
+        return v;
+    });
+
+    // \uFEFF BOM → Excel opens Hindi text correctly
+    const csv  = '\uFEFF' + header + '\n' + values.join(',');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = currentFile.replace('.pdf', '') + '_extracted.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════
+//  Status badge
+// ═══════════════════════════════════════════════════
+function setStatus(type, text) {
+    const el = document.getElementById('statusBadge');
+    if (!type) { el.className = 'status-badge'; el.innerHTML = ''; return; }
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+    el.className = `status-badge ${type} show`;
+    el.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Large archives and audit bundles
+*.zip
+accuracy_audit_bundle.zip
+unused_archive/
+pipeline_verification/
+
+# Standalone debug reports and high-res debug images
+accuracy_report_standalone.html
+accuracy_report.html
+*_qr_debug.png
+*_debug.png
+
+# Credentials and secrets
+service_account.json
+*.env
+.env*
+*.pem
+*.key
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
