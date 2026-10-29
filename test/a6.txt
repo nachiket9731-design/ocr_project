@@ -1,0 +1,3 @@
+Request to display message flex cards on 8 different Laws around the peace hall Balcony in English language.
+
+Display should also be placed at the eye level so better visibility.

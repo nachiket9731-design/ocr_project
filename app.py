@@ -21,6 +21,12 @@ import base64
 import tempfile
 import traceback
 
+# Force UTF-8 output so Hindi text prints correctly on Windows
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 # Ensure the project root is on the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

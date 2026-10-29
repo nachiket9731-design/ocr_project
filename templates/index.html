@@ -800,7 +800,13 @@
                     <div class="field-row full">
                         <div class="f-label">
                             <span class="f-hindi">Q14: सुझाव या फीडबैक</span>
-                            <span class="f-english">Feedback / Suggestions — Open text</span>
+                            <span class="f-english">Feedback / Suggestions — Open text (Google Cloud Vision)</span>
+                        </div>
+                        <div id="q14_crop_container" style="display:none; margin-bottom:8px; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px;">
+                            <div style="font-size:0.75rem; color:#94a3b8; font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-crop-alt" style="color:#818cf8;"></i> <span>Page 2 Q14 Cropped Region</span>
+                            </div>
+                            <img id="q14_crop_img" src="" style="width:100%; height:auto; border-radius:4px; border:1px solid #475569; display:block;" alt="Q14 Crop Preview">
                         </div>
                         <textarea class="f-input" id="f_P2_Q14" placeholder="Extracted feedback text will appear here..."></textarea>
                     </div>
@@ -892,6 +898,8 @@ function handleFile(file) {
     // Reset right panel
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('fieldsContainer').style.display = 'none';
+    const cropBoxReset = document.getElementById('q14_crop_container');
+    if (cropBoxReset) cropBoxReset.style.display = 'none';
     document.getElementById('downloadBtn').disabled = true;
     setStatus('', '');
 
@@ -953,6 +961,18 @@ function fillFields(fields) {
         if (el) el.value = (fields[key] !== undefined && fields[key] !== null)
                            ? fields[key] : '';
     });
+
+    // Populate Q14 crop preview
+    const cropBox = document.getElementById('q14_crop_container');
+    const cropImg = document.getElementById('q14_crop_img');
+    if (cropBox && cropImg) {
+        if (fields.q14_crop) {
+            cropImg.src = 'data:image/png;base64,' + fields.q14_crop;
+            cropBox.style.display = 'block';
+        } else {
+            cropBox.style.display = 'none';
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════

@@ -1,0 +1,45 @@
+test\a1.png
+  correct : इस शिबिर अद्भुत है। बहुत आनंद आया। यह शिबिर सब लोगों ने करना चाहिए।
+  fixed   : 1 n इस ्वर आदभत यहुत आ नद आया स खविर सव लग ज करनू वाहि५
+  error old/new: 0.51 / 0.51
+
+test\a2.png
+  correct : बहोत बढ़िया शिबीर है। धन्यवाद तो धन्यवाद है। जो MSP इस ध्यान शिबीर हम करे इसके लिए निमीत्त बने उनको और सरजी को
+  fixed   : बबेन ब्वोय शिवीर वहपवाय वन्पवाद ॐ 4 जा 2 MSy इर ध शिवीर रस  2 0 नि्ीत बडे उय औॉर सरजी का
+  error old/new: 0.66 / 0.51
+
+test\a3.png
+  correct : Good to complete the retreat in 3 or 4 days instead of 5 It is good to have one meditation on Mountain outside but climate conditions not
+  fixed   : ① Good to Cmplete the yetyeat In 3 or 4 day usteado ② It is good to hare one meditation on Mountain outside $ut claimde condihon noo
+  error old/new: 0.16 / 0.16
+
+test\a4.png
+  correct : यह शिबिर 21 दिन का संभव हो तो होना चाहिए ताकि और गहराइयों से अभ्यास हो जाए.
+  fixed   : य श्रविर 2ा विनका संखन हे तो होना यादिए ताकी औ२ गद्शईयों से क्थाय हो जाए C
+  error old/new: 0.32 / 0.32
+
+test\a5.png
+  correct : इस शिबिर बहोत सा मानसिक तनाव दुर हुवा है, चिजो के देखने का नया नजरिया देखने को मिला, बहोत सुंदर थे दिन।
+  fixed   : कस शिंबिर 0 वहोनस प्ानांसक तणाव उर डुवा है किों के देखने का नया नजरीया a ो मिला बरोल सुंदर गेटिन ह
+  error old/new: 0.56 / 0.35
+
+test\a6.png
+  correct : Request to display message flex cards on 8 different Laws around the peace hall Balcony in English language. Display should also be placed at the eye level so better visibility.
+  fixed   : # Request to dispon messege flex cards on 8 dlferend Laus around the peace hal balcons in Fnglish language. Display shonte aleo ho plaed.at tre  ee lene abetter visibilty
+  error old/new: 0.18 / 0.18
+
+test\a7.png
+  correct : ध्यान की समझ बढाने के लिए साल मे 3 दिवस का ध्यान साधना होती रहे। धन्यवाद.
+  fixed   : छतन की समज दानीकै किए सालमे उ दिवस का रन न होी २ोर्यवाय.
+  error old/new: 0.41 / 0.41
+
+test\a8.png
+  correct : PPT shown on screen please change font color it is not clearly visual from far distance all the khoji's sitting
+  fixed   : peT shoun on screen please change font color it is not clearly visval from far distanice all the khoji's sitting at bask weront chle to reed it eail (eet od &Aygan)
+  error old/new: 0.51 / 0.51
+
+test\a9.png
+  correct : साल में every 3 months / 6 months repeat le sakte hey - continuity & stabilisation ke
+  fixed   : Q # eveny 3 month /6 nnthessepeot le sakte hey  continuity & stebiliscation ke
+  error old/new: 0.22 / 0.22
+

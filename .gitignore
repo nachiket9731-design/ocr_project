@@ -26,13 +26,19 @@ accuracy_report_standalone.html
 accuracy_report.html
 *_qr_debug.png
 *_debug.png
+q14_*.png
 
 # Credentials and secrets
-service_account.json
+service_account*.json
+*credentials*.json
+*secret*.json
 *.env
 .env*
 *.pem
 *.key
+
+# Backups
+output_backup.csv
 
 # Operating System files
 .DS_Store

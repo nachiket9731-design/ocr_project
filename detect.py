@@ -620,7 +620,7 @@ def _get_vision_client():
     if not os.path.isabs(sa_path):
         sa_path = os.path.join(os.path.dirname(__file__), sa_path)
 
-    if os.path.exists(sa_path):
+    if os.path.exists(sa_path) and os.path.getsize(sa_path) > 10:
         try:
             from google.cloud import vision
             from google.oauth2 import service_account
@@ -890,5 +890,104 @@ def extract_all_text_fields_single_call(
         "Name": name_val,
         "P2_Q14": q14_val
     }
+
+
+def read_q14_google_vision(image: np.ndarray, bbox: tuple = None, api_key: str = None) -> str:
+    """
+    Extract Question 14 (free-text answer on Page 2) using Google Cloud Vision API.
+    Supports Service Account JSON and REST API Key.
+    Falls back gracefully to local EasyOCR if API is unavailable or unconfigured.
+
+    Args:
+        image: Full-page BGR image of Page 2 (aligned).
+        bbox:  (x1, y1, x2, y2) crop region. Defaults to C.PAGE2_Q14_TEXT.
+        api_key: Optional Google Vision API key string.
+
+    Returns:
+        Extracted text string (stripped).
+    """
+    if bbox is None:
+        bbox = getattr(C, "PAGE2_Q14_TEXT", (140, 2225, 1650, 2390))
+
+    x1, y1, x2, y2 = bbox
+    crop = image[y1:y2, x1:x2]
+    if crop.size == 0:
+        return ""
+
+    if api_key is None:
+        api_key = getattr(C, "GOOGLE_VISION_API_KEY", "")
+
+    # Encode crop to JPEG
+    success, buffer = cv2.imencode('.jpg', crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+    if not success:
+        return read_text(image, bbox)
+
+    # 1. Try Service Account JSON (official Google Cloud Vision SDK)
+    client = _get_vision_client()
+    if client is not None:
+        try:
+            from google.cloud import vision
+            vision_img = vision.Image(content=buffer.tobytes())
+            image_context = vision.ImageContext(language_hints=["hi", "en"])
+            response = client.document_text_detection(image=vision_img, image_context=image_context)
+
+            if response.error.message:
+                print(f"  [ERROR] Google Vision SDK error for Q14: {response.error.message}")
+            else:
+                if response.full_text_annotation and response.full_text_annotation.text:
+                    extracted = response.full_text_annotation.text.strip()
+                    print(f"  [Google Vision] Q14 Extracted: {extracted!r}")
+                    return extracted
+                elif response.text_annotations:
+                    extracted = response.text_annotations[0].description.strip()
+                    print(f"  [Google Vision] Q14 Extracted: {extracted!r}")
+                    return extracted
+                else:
+                    return ""
+        except Exception as e:
+            print(f"  [WARN] Google Vision SDK request failed for Q14: {e}")
+
+    # 2. Try REST API Key fallback
+    if api_key and api_key.strip():
+        try:
+            img_b64 = base64.b64encode(buffer).decode('utf-8')
+            url = f"https://vision.googleapis.com/v1/images:annotate?key={api_key.strip()}"
+            payload = json.dumps({
+                "requests": [
+                    {
+                        "image": {"content": img_b64},
+                        "features": [{"type": "DOCUMENT_TEXT_DETECTION"}],
+                        "imageContext": {
+                            "languageHints": ["hi", "en"]
+                        }
+                    }
+                ]
+            }).encode('utf-8')
+
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                responses = data.get("responses", [])
+                if responses:
+                    res0 = responses[0]
+                    if "fullTextAnnotation" in res0 and res0["fullTextAnnotation"].get("text"):
+                        extracted = res0["fullTextAnnotation"]["text"].strip()
+                        print(f"  [Google Vision REST] Q14 Extracted: {extracted!r}")
+                        return extracted
+                    elif "textAnnotations" in res0 and res0["textAnnotations"]:
+                        extracted = res0["textAnnotations"][0].get("description", "").strip()
+                        print(f"  [Google Vision REST] Q14 Extracted: {extracted!r}")
+                        return extracted
+        except Exception as e:
+            print(f"  [WARN] Google Vision REST API failed for Q14: {e}")
+
+    # Fallback to local EasyOCR
+    print("  [INFO] Google Vision credentials not active. Falling back to local EasyOCR for Q14...")
+    return read_text(image, bbox)
+
 
 

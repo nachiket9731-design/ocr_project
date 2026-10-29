@@ -28,6 +28,7 @@ import glob
 import pandas as pd
 import numpy as np
 import cv2
+import base64
 
 from align import pdf_to_images, align_page
 import config as C
@@ -37,7 +38,8 @@ from detect import (
     read_text,
     read_text_header,
     read_checkbox,
-    read_circled_number
+    read_circled_number,
+    read_q14_google_vision
 )
 
 # ---------------------------------------------------------------------------
@@ -145,22 +147,20 @@ def extract_form(filled_pdf_path: str, template_images: list) -> dict:
             print("  [WARN] Could not fetch profile data or profile is empty.")
 
     # -----------------------------------------------------------------------
-    # TEXT EXTRACTION (Local EasyOCR Only)
+    # TEXT EXTRACTION (Page 2 - Q14 Free Text via Google Cloud Vision API)
     # Extracts P2_Q14. Date, Khoji_No, City, Name are handled by QR integration.
     # -----------------------------------------------------------------------
-    print("\n  --- Extracting Text Fields (Local EasyOCR) ---")
-    # texts = extract_all_text_fields_single_call(
-    #     p1_aligned=p1,
-    #     p2_aligned=p2,
-    #     api_key=C.GOOGLE_VISION_API_KEY
-    # )
-    # row["Date"]     = texts.get("Date", "")
-    # row["Khoji_No"] = texts.get("Khoji_No", "")
-    # row["City"]     = texts.get("City", "")
-    # row["Name"]     = texts.get("Name", "")
-    # row["P2_Q14"]   = texts.get("P2_Q14", "")
-    
-    row["P2_Q14"] = read_text(p2, C.PAGE2_Q14_TEXT)
+    print("\n  --- Extracting P2_Q14 (Google Cloud Vision API) ---")
+    row["P2_Q14"] = read_q14_google_vision(p2, C.PAGE2_Q14_TEXT)
+    print(f"  P2_Q14: {row['P2_Q14']!r}")
+
+    # Attach Q14 crop for UI preview
+    qx1, qy1, qx2, qy2 = C.PAGE2_Q14_TEXT
+    q14_crop_img = p2[qy1:qy2, qx1:qx2]
+    if q14_crop_img.size > 0:
+        succ, buf = cv2.imencode('.png', q14_crop_img)
+        if succ:
+            row["q14_crop"] = base64.b64encode(buf).decode('utf-8')
 
     # -----------------------------------------------------------------------
     # PAGE 1 (Checkboxes & Circled Numbers - 0 Credits / OpenCV Local)
