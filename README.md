@@ -79,7 +79,7 @@ To review forms with an interactive UI in your browser:
 ```bash
 python app.py
 ```
-Then navigate to `http://localhost:5000` in your browser to upload PDFs and inspect extracted values.
+Then navigate to `http://localhost:5002` in your browser to upload PDFs and inspect extracted values.
 
 ### Evaluating Accuracy
 To test the pipeline's extraction performance against labeled ground truth:

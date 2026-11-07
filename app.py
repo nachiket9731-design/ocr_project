@@ -5,7 +5,7 @@ Usage:
     pip install flask
     python app.py
 
-Opens at: http://localhost:5000
+Opens at: http://localhost:5002
 
 What this does:
   - Serves the review UI (templates/index.html)
@@ -153,9 +153,10 @@ def process():
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5002))
     print("=" * 55)
     print("  FormScanner OCR — Local Review UI")
-    print("  Open your browser at: http://localhost:5000")
+    print(f"  Open your browser at: http://localhost:{port}")
     print("=" * 55)
 
     # Pre-load the template at startup so the first upload is fast
@@ -166,4 +167,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print("\nServer starting... Press Ctrl+C to stop.\n")
-    app.run(debug=False, host="127.0.0.1", port=5000)
+    app.run(debug=False, host="127.0.0.1", port=port)
