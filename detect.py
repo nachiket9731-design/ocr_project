@@ -892,6 +892,56 @@ def extract_all_text_fields_single_call(
     }
 
 
+def reconstruct_reading_order(annotations: list, line_tolerance: int = 25) -> str:
+    """
+    Groups word-level annotations (annotations[1:]) by vertical Y-overlap
+    and sorts each line from left to right. Prevents Google Vision's document
+    layout analyzer from grouping wide-spaced handwriting into vertical columns.
+    """
+    words = []
+    for ann in annotations[1:]:
+        text = ann.description.strip() if hasattr(ann, 'description') else ann.get("description", "").strip()
+        if not text:
+            continue
+        vertices = ann.bounding_poly.vertices if hasattr(ann, 'bounding_poly') else ann.get("boundingPoly", {}).get("vertices", [])
+        xs = [v.x if hasattr(v, 'x') else v.get("x", 0) for v in vertices]
+        ys = [v.y if hasattr(v, 'y') else v.get("y", 0) for v in vertices]
+        if not xs or not ys:
+            continue
+        y_center = sum(ys) / len(ys)
+        x_min = min(xs)
+        words.append((y_center, x_min, text))
+
+    if not words:
+        return ""
+
+    # Sort primarily by Y-center
+    words.sort(key=lambda w: w[0])
+
+    lines = []
+    current_line = []
+    current_y = None
+
+    for y_center, x_min, text in words:
+        if current_y is None or abs(y_center - current_y) <= line_tolerance:
+            current_line.append((x_min, text))
+            current_y = y_center if current_y is None else (current_y + y_center) / 2
+        else:
+            lines.append(current_line)
+            current_line = [(x_min, text)]
+            current_y = y_center
+    if current_line:
+        lines.append(current_line)
+
+    # Sort each line left-to-right (by x_min)
+    ordered_lines = []
+    for line in lines:
+        line.sort(key=lambda w: w[0])
+        ordered_lines.append(" ".join(w[1] for w in line))
+
+    return "\n".join(ordered_lines)
+
+
 def read_q14_google_vision(image: np.ndarray, bbox: tuple = None, api_key: str = None) -> str:
     """
     Extract Question 14 (free-text answer on Page 2) using Google Cloud Vision API.
@@ -934,6 +984,11 @@ def read_q14_google_vision(image: np.ndarray, bbox: tuple = None, api_key: str =
             if response.error.message:
                 print(f"  [ERROR] Google Vision SDK error for Q14: {response.error.message}")
             else:
+                if response.text_annotations and len(response.text_annotations) > 1:
+                    extracted = reconstruct_reading_order(response.text_annotations)
+                    if extracted:
+                        print(f"  [Google Vision] Q14 Extracted (spatial sort): {extracted!r}")
+                        return extracted
                 if response.full_text_annotation and response.full_text_annotation.text:
                     extracted = response.full_text_annotation.text.strip()
                     print(f"  [Google Vision] Q14 Extracted: {extracted!r}")
@@ -974,6 +1029,12 @@ def read_q14_google_vision(image: np.ndarray, bbox: tuple = None, api_key: str =
                 responses = data.get("responses", [])
                 if responses:
                     res0 = responses[0]
+                    text_ann = res0.get("textAnnotations", [])
+                    if len(text_ann) > 1:
+                        extracted = reconstruct_reading_order(text_ann)
+                        if extracted:
+                            print(f"  [Google Vision REST] Q14 Extracted (spatial sort): {extracted!r}")
+                            return extracted
                     if "fullTextAnnotation" in res0 and res0["fullTextAnnotation"].get("text"):
                         extracted = res0["fullTextAnnotation"]["text"].strip()
                         print(f"  [Google Vision REST] Q14 Extracted: {extracted!r}")
